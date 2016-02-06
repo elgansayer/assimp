@@ -139,7 +139,7 @@ zlib_filefunc_def IOSystem2Unzip::get(IOSystem* pIOHandler) {
 
 // ------------------------------------------------------------------------------------------------
 ZipFile::ZipFile(size_t size) : m_Size(size) {
-    ai_assert(m_Size != 0);
+    //ai_assert(m_Size != 0); //not set on init
 
     m_Buffer = malloc(m_Size);
 }

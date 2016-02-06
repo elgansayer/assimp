@@ -132,6 +132,9 @@ bool Q3BSPFileParser::parseFile()
     // Conunt data and prepare model data
     countLumps();
 
+	// Read Textures
+	getTextures();
+
     // Read in Vertices
     getVertices();
 
@@ -141,8 +144,6 @@ bool Q3BSPFileParser::parseFile()
     // Read Faces
     getFaces();
 
-    // Read Textures
-    getTextures();
 
     // Read Lightmaps
     getLightMaps();
@@ -163,7 +164,7 @@ bool Q3BSPFileParser::validateFormat()
     if (pHeader->strID[ 0 ] != 'I' || pHeader->strID[ 1 ] != 'B' || pHeader->strID[ 2 ] != 'S'
         || pHeader->strID[ 3 ] != 'P')
     {
-        return false;
+        //return false;
     }
 
     return true;
@@ -172,13 +173,23 @@ bool Q3BSPFileParser::validateFormat()
 // ------------------------------------------------------------------------------------------------
 void Q3BSPFileParser::getLumps()
 {
-    size_t Offset = m_sOffset;
+	m_sOffset = 12;
+	size_t Offset = m_sOffset;
+	
+	size_t len = sizeof(sQ3BSPLump)*kMaxLumps;
+ 	//memcpy((char *)&m_pModel->m_Lumps, &m_Data, len);
+
     m_pModel->m_Lumps.resize( kMaxLumps );
+
     for ( size_t idx=0; idx < kMaxLumps; idx++ )
     {
         sQ3BSPLump *pLump = new sQ3BSPLump;
-        memcpy( pLump, &m_Data[ Offset ], sizeof( sQ3BSPLump ) );
-        Offset += sizeof( sQ3BSPLump );
+     //   memcpy( pLump, &m_Data[ Offset ], sizeof( sQ3BSPLump ) );
+		//std::copy((char*)pLump, (char*)pLump + sizeof(sQ3BSPLump), &m_Data[Offset]);
+		std::copy(&m_Data[Offset], &m_Data[Offset] + sizeof(sQ3BSPLump), (char*)pLump );
+		
+
+        Offset += sizeof(sQ3BSPLump);
         m_pModel->m_Lumps[ idx ] = pLump;
     }
 }
@@ -187,9 +198,9 @@ void Q3BSPFileParser::getLumps()
 void Q3BSPFileParser::countLumps()
 {
     m_pModel->m_Vertices.resize( m_pModel->m_Lumps[ kVertices ]->iSize / sizeof( sQ3BSPVertex ) );
-    m_pModel->m_Indices.resize( m_pModel->m_Lumps[ kMeshVerts ]->iSize  / sizeof( int ) );
+    m_pModel->m_Indices.resize( m_pModel->m_Lumps[kIndices]->iSize  / sizeof( int ) );
     m_pModel->m_Faces.resize( m_pModel->m_Lumps[ kFaces ]->iSize / sizeof( sQ3BSPFace ) );
-    m_pModel->m_Textures.resize( m_pModel->m_Lumps[ kTextures ]->iSize / sizeof( sQ3BSPTexture ) );
+    m_pModel->m_Textures.resize( m_pModel->m_Lumps[kShaders]->iSize / sizeof( sQ3BSPTexture ) );
     m_pModel->m_Lightmaps.resize( m_pModel->m_Lumps[ kLightmaps ]->iSize / sizeof( sQ3BSPLightmap ) );
 }
 
@@ -200,7 +211,9 @@ void Q3BSPFileParser::getVertices()
     for ( size_t idx = 0; idx < m_pModel->m_Vertices.size(); idx++ )
     {
         sQ3BSPVertex *pVertex = new sQ3BSPVertex;
-        memcpy( pVertex, &m_Data[ Offset ], sizeof( sQ3BSPVertex ) );
+        //memcpy( pVertex, &m_Data[ Offset ], sizeof( sQ3BSPVertex ) );
+		std::copy(&m_Data[Offset], &m_Data[Offset] + sizeof(sQ3BSPVertex), (char*)pVertex);
+
         Offset += sizeof( sQ3BSPVertex );
         m_pModel->m_Vertices[ idx ] = pVertex;
     }
@@ -211,11 +224,12 @@ void Q3BSPFileParser::getIndices()
 {
     ai_assert( NULL != m_pModel );
 
-    sQ3BSPLump *lump = m_pModel->m_Lumps[ kMeshVerts ];
+    sQ3BSPLump *lump = m_pModel->m_Lumps[ kIndices ];
     size_t Offset = (size_t) lump->iOffset;
     const size_t nIndices = lump->iSize / sizeof( int );
     m_pModel->m_Indices.resize( nIndices );
     memcpy( &m_pModel->m_Indices[ 0 ], &m_Data[ Offset ], lump->iSize );
+	//std::copy(&m_Data[Offset], &m_Data[Offset] + sizeof(sQ3BSPFace), (char*)pFace);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -227,7 +241,8 @@ void Q3BSPFileParser::getFaces()
     for ( size_t idx = 0; idx < m_pModel->m_Faces.size(); idx++ )
     {
         sQ3BSPFace *pFace = new sQ3BSPFace;
-        memcpy( pFace, &m_Data[ Offset ], sizeof( sQ3BSPFace ) );
+        //memcpy( pFace, &m_Data[ Offset ], sizeof( sQ3BSPFace ) );
+		std::copy(&m_Data[Offset], &m_Data[Offset] + sizeof(sQ3BSPFace), (char*)pFace);
         m_pModel->m_Faces[ idx ] = pFace;
         Offset += sizeof( sQ3BSPFace );
     }
@@ -238,11 +253,16 @@ void Q3BSPFileParser::getTextures()
 {
     ai_assert( NULL != m_pModel );
 
-    size_t Offset = m_pModel->m_Lumps[ kTextures ]->iOffset;
+    size_t Offset = m_pModel->m_Lumps[ kShaders ]->iOffset;
     for ( size_t idx=0; idx < m_pModel->m_Textures.size(); idx++ )
     {
         sQ3BSPTexture *pTexture = new sQ3BSPTexture;
-        memcpy( pTexture, &m_Data[ Offset ], sizeof(sQ3BSPTexture) );
+        //memcpy( pTexture, &m_Data[ Offset ], sizeof(sQ3BSPTexture) );
+		// so, you would do this:
+		
+		std::copy(&m_Data[Offset], &m_Data[Offset] + sizeof(sQ3BSPTexture), (char*)pTexture);
+
+
         m_pModel->m_Textures[ idx ] = pTexture;
         Offset += sizeof(sQ3BSPTexture);
     }
@@ -257,7 +277,12 @@ void Q3BSPFileParser::getLightMaps()
     for ( size_t idx=0; idx < m_pModel->m_Lightmaps.size(); idx++ )
     {
         sQ3BSPLightmap *pLightmap = new sQ3BSPLightmap;
-        memcpy( pLightmap, &m_Data[ Offset ], sizeof( sQ3BSPLightmap ) );
+       // memcpy( pLightmap, &m_Data[ Offset ], sizeof( sQ3BSPLightmap ) );
+
+		// so, you would do this:
+		//std::copy(pLightmap, pLightmap + sizeof(sQ3BSPLightmap), &m_Data[Offset] );
+		std::copy(&m_Data[Offset], &m_Data[Offset] + sizeof(sQ3BSPLightmap), (char*)pLightmap);
+
         Offset += sizeof( sQ3BSPLightmap );
         m_pModel->m_Lightmaps[ idx ] = pLightmap;
     }

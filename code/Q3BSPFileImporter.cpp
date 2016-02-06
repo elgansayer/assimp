@@ -210,8 +210,10 @@ void Q3BSPFileImporter::InternReadFile(const std::string &rFile, aiScene* pScene
     }
 
     Q3BSPFileParser fileParser( mapName, &Archive );
-    Q3BSPModel *pBSPModel = fileParser.getModel();
-    if ( NULL != pBSPModel )
+    Q3BSPModel *pBSPModel = fileParser.getModel();    
+	
+	
+	if ( NULL != pBSPModel )
     {
         CreateDataFromImport( pBSPModel, pScene, &Archive );
     }

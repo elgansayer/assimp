@@ -77,8 +77,8 @@ struct sQ3BSPHeader {
 /// Describes an entry.
 struct sQ3BSPLump
 {
-    int iOffset;    ///< Offset from start pointer of file
-    int iSize;      ///< Size of part
+	signed int iOffset;    ///< Offset from start pointer of file
+	signed int iSize;      ///< Size of part
 };
 
 struct vec2f
@@ -118,14 +118,19 @@ struct sQ3BSPFace
     vec3f vLMapVecs[ 2 ];           ///< 3D-s-t-vectors
     vec3f vNormal;                  ///< Polygon normals
     int patchWidth, patchHeight;    ///< bezier patch
+	float subdivisions; //MOHAA
 };
 
 /// A quake3 texture name.
 struct sQ3BSPTexture {
     char strName[ 64 ];     ///< Name of the texture without extension
-    int iFlags;             ///< Not used
-    int iContents;          ///< Not used
+	unsigned int iFlags;             ///< Not used
+	unsigned int iContents;          ///< Not used
+	unsigned int subdivisions; //MOHAA
+	char fenceMaskImage[64]; //MOHAA
 };
+
+//mohaa imageBits[128][128][3];   // The RGB data in a 128x128 image
 
 /// A light-map of the level, size 128 x 128, RGB components.
 struct sQ3BSPLightmap {
@@ -140,7 +145,9 @@ struct SubPatch {
     int lightmapID;
 };
 
-enum eLumps {
+//quake3
+/*
+enum q3_eLumps {
     kEntities = 0,
     kTextures,
     kPlanes,
@@ -159,6 +166,40 @@ enum eLumps {
     kLightVolumes,
     kVisData,
     kMaxLumps
+};
+*/
+//mohaa
+enum eLumps
+{
+	kShaders = 0,	// Stores texture information
+	kPlanes = 1,	// Stores the splitting planes
+	kLightmaps = 2,	// Stores the lightmaps for the level
+	kFaces = 3,	// Stores the faces for the level
+	kVertices = 4,	// Stores the level vertices
+	kIndices = 5,	// Stores the indices for the level
+	kLeafBrushes = 6,	// Stores the leaf's indices into the brushes
+	kLeafFaces = 7,	// Stores the leaf's indices into the faces
+	kLeafs = 8,	// Stores the leafs of the nodes
+	kNodes = 9,	// Stores the BSP nodes
+	kSideequations = 10,	// ---
+	kBrushSides = 11,	// Stores the brush surfaces info
+	kBrushes = 12,	// Stores the brushes info (for collision)
+	kModels = 13,	// Stores the info of world models
+	kEntities = 14,	// Stores player/object positions, etc...
+	kVisData = 15,	// Stores PVS and cluster info (visibility)
+	kLightGridPal = 16,	// Stores extra world lighting information (palette)
+	kLightGridOfs = 17,	// Stores extra world lighting information (offsets)
+	kLightGridDat = 18,	// Stores extra world lighting information (data)
+	kSphereLight = 19,	// sphere lights
+	kSphereLightVis = 20,	// sphere lights vis
+	kUnknown1 = 21,	// not used in the code (?)
+	kTerrain = 22,	// LOD terrain
+	kTerrainIndices = 23,	// LOD terrain indices
+	kStatModelDat = 24,	// Static Model Data
+	kStatModelDef = 25,	// Static Model Defs
+	kStatModelInd = 26,	// Static Model Indices
+	kUnknown2 = 27,	// not used in the code (?)
+	kMaxLumps				// A constant to store the number of lumps
 };
 
 struct Q3BSPModel {
